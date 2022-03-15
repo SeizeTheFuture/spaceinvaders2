@@ -61,9 +61,10 @@ class Game():
 class Player(pygame.sprite.Sprite):
     """A class to model a spaceship the user can control"""
 
-    def __init__(self):
+    def __init__(self, laser_group):
         """Initialize the player"""
-        pass
+        super().__init__()
+        self.image = pygame.image.load("player_ship.png")
 
     def update(self):
         """Update the player"""
@@ -98,7 +99,43 @@ class Alien(pygame.sprite.Sprite):
         pass
 
 class PlayerLaser(pygame.sprite.Sprite):
-    pass
+    """A class to model a laser fired by the player"""
+
+    def __init__(self):
+        """Initialize the bullet"""
+        pass
+
+    def update(self):
+        """Update the bullet"""
+        pass
+
+class AlienLaser(pygame.sprite.Sprite):
+    """A class to model a laser fired by the player"""
+
+    def __init__(self):
+        """Initialize the bullet"""
+        pass
+
+    def update(self):
+        """Update the bullet"""
+        pass
+
+#Create laser groups
+player_laser_group = pygame.sprite.Group()
+alien_laser_group = pygame.sprite.Group()
+
+#Create a player group and player object
+player_group = pygame.sprite.Group()
+player = Player(player_laser_group)
+player_group.add(player)
+
+#Create an alien group. We will add alien objects via the game's start new round method
+alien_group = pygame.sprite.Group()
+
+#Create a Game object
+game = Game()
+
+
 #The main game loop
 running = True
 while running:
@@ -106,6 +143,26 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    #Fill the display
+    display_surface.fill((0,0,0))
+
+    #Update and display all sprite groups
+    player_group.update()
+    player_group.draw(display_surface)
+
+    alien_group.update()
+    alien_group.draw(display_surface)
+
+    player_laser_group.update()
+    player_laser_group.draw(display_surface)
+
+    alien_laser_group.update()
+    alien_laser_group.draw()
+
+    #Update and draw Game object
+    game.update()
+    game.draw()
 
     #Update the display and tick the clock
     pygame.display.update()
