@@ -86,7 +86,10 @@ class Player(pygame.sprite.Sprite):
 
     def fire(self):
         """Fire a laser"""
-        pass
+        #Restrict the number of bullets on screen at a time
+        if len(self.laser_group) < 2:
+            self.shoot_sound.play()
+            PlayerLaser(self.rect.centerx, self.rect.top, self.laser_group)
 
     def reset(self):
         """Reset the player's position"""
@@ -96,27 +99,45 @@ class Player(pygame.sprite.Sprite):
 class Alien(pygame.sprite.Sprite):
     """A class to model an enemy alien"""
 
-    def __init__(self):
+    def __init__(self, x, y, velocity, laser_group):
         """Initialize the alien"""
-        pass
+        super().__init__()
+        self.image = pygame.image.load("alien.png")
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (x,y)
+
+        self.starting_x = x
+        self.starting_y = y
+
+        self.direction = 1
+        self.velocity = velocity
+        self.laser_group = laser_group
+
+        self.shoot_sound = pygame.mixer.Sound("alien_fire.wav")
 
     def update(self):
         """Update the alien"""
-        pass
+        self.rect.x += self.velocity * self.direction
+
+        #Randomly fire a laser
+        if random.randint(0, 1000) > 999 and len(self.laser_group) < 3:
+            self.shoot_sound.play()
+            self.fire()
 
     def fire(self):
         """Fire a laser"""
-        pass
+        AlienLaser(self.rect.centerx, self.rect.bottom, self.laser_group)
 
     def reset(self):
         """Reset the alien's position"""
-        pass
+        self.rect.topleft = (self.starting_x, self.starting_y)
+        self.direction = 1
 
 class PlayerLaser(pygame.sprite.Sprite):
     """A class to model a laser fired by the player"""
 
     def __init__(self, x, y, laser_group):
-        """Initialize the bullet"""
+        """Initialize the laser"""
         super().__init__()
         self.image = pygame.image.load("green_laser.png")
         self.rect = self.image.get_rect()
@@ -128,19 +149,31 @@ class PlayerLaser(pygame.sprite.Sprite):
         pass
 
     def update(self):
-        """Update the bullet"""
-        pass
+        """Update the laser"""
+        self.rect.y -= self.velocity
+        #If the laser is off the screen, destroy it
+        if self.rect.bottom < 0:
+            self.kill()
 
 class AlienLaser(pygame.sprite.Sprite):
     """A class to model a laser fired by the player"""
 
-    def __init__(self):
-        """Initialize the bullet"""
-        pass
+    def __init__(self, x, y, laser_group):
+        """Initialize the laser"""
+        super().__init__()
+        self.image = pygame.image.load("red_laser.png")
+        self.rect = self.image.get_rect()
+        self.rect.centerx = x
+        self.rect.centery = y
+
+        self.velocity = 10
+        laser_group.add(self)
 
     def update(self):
-        """Update the bullet"""
-        pass
+        """Update the laser"""
+        self.rect.y += self.velocity
+        if self.rect.top > WINDOW_HEIGHT:
+            self.kill()
 
 #Create laser groups
 player_laser_group = pygame.sprite.Group()
@@ -154,6 +187,11 @@ player_group.add(player)
 #Create an alien group. We will add alien objects via the game's start new round method
 alien_group = pygame.sprite.Group()
 
+#Test aliens - will delete later
+for i in range(10):
+    alien = Alien(64 + i*64, 100, 3, alien_laser_group)
+    alien_group.add(alien)
+
 #Create a Game object
 game = Game()
 
@@ -165,6 +203,10 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        #The player wants to fire
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player.fire()
 
     #Fill the display
     display_surface.fill((0,0,0))
