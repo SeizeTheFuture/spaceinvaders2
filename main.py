@@ -72,7 +72,26 @@ class Game():
 
     def shift_aliens(self):
         """Shift a wave of aliens down the screen and reverse directions"""
-        pass
+        #Determine if alien group has hit an edge
+        shift = False
+        for alien in self.alien_group.sprites():
+            if alien.rect.left <= 0 or alien.rect.right >= WINDOW_WIDTH:
+                shift = True
+        #Shift every alien down and change direction and move alien off edge so shift doesn't trigger
+        if shift:
+            breach = False
+            for alien in self.alien_group.sprites():
+                alien.rect.y += 10*self.round
+                alien.direction *= -1
+                alien.rect.x + alien.direction * alien.velocity
+                if alien.rect.bottom >= WINDOW_HEIGHT - 100:
+                    breach = True
+
+            #Aliens breached the line
+            if breach:
+                self.breach_sound.play()
+                self.player.lives -= 1
+                self.check_game_status("Aliens breached the line", "Press 'Enter' to continue")
 
     def check_collisions(self):
         """Check for collisions"""
@@ -88,20 +107,61 @@ class Game():
 
         #Pause the game and prompt the user to start
         self.new_round_sound.play()
-        self.pause_game()
+        self.pause_game(f"Space Invaders Round {self.round}", "Press 'Enter' to begin")
 
 
     def check_round_completion(self):
         """Check to see if a player has completed a single round"""
         pass
 
-    def check_game_status(self):
+    def check_game_status(self, main_text, sub_text):
         """Check to see the status of the game and how the player died"""
-        pass
+        #Empty laser groups and reset player and aliens
+        self.alien_laser_group.empty()
+        self.player_laser_group.empty()
+        self.player.reset()
+        for alien in self.alien_group:
+            alien.reset()
+        #Check if the game is over or if it is a simple round reset
+        if self.player.lives <= 0:
+            self.reset_game()
+        else:
+            self.pause_game(main_text, sub_text)
 
-    def pause_game(self):
+    def pause_game(self, main_text, sub_text):
         """Pause the game"""
-        pass
+        global running
+        #Set colors
+        WHITE=(255,255,255)
+        BLACK=(0,0,0)
+
+        #Create main pause text
+        main_text = self.font.render(main_text, True, WHITE)
+        main_rect = main_text.get_rect()
+        main_rect.center = (WINDOW_WIDTH//2, WINDOW_HEIGHT//2)
+
+        #Create sub text
+        sub_text = self.font.render(sub_text, True, WHITE)
+        sub_rect = sub_text.get_rect()
+        sub_rect.center = (WINDOW_WIDTH//2, WINDOW_HEIGHT//2 + 64)
+
+        #Blit the pause text
+        display_surface.fill(BLACK)
+        display_surface.blit(main_text, main_rect)
+        display_surface.blit(sub_text, sub_rect)
+        pygame.display.update()
+
+        #Pause the game until the user hits enter
+        is_paused = True
+        while is_paused:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    is_paused = False
+                    running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        is_paused = False
+
 
     def reset_game(self):
         """Reset the game"""
