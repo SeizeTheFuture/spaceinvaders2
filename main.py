@@ -95,7 +95,16 @@ class Game():
 
     def check_collisions(self):
         """Check for collisions"""
-        pass
+        #See if any laser in the player laser group hit an alien in the alien group
+        if pygame.sprite.groupcollide(self.player_laser_group, self.alien_group, True, True):
+            self.alien_hit_sound.play()
+            self.score += 100 * self.round
+
+        #See if the player has collided with any laser in the alien laser group
+        if pygame.sprite.spritecollide(self.player, self.alien_laser_group, True):
+            self.player_hit_sound.play()
+            self.player.lives -= 1
+            self.check_game_status("You've been hit!", "Press 'Enter' to continue")
 
     def start_new_round(self):
         """Start a new round"""
@@ -112,7 +121,11 @@ class Game():
 
     def check_round_completion(self):
         """Check to see if a player has completed a single round"""
-        pass
+        #If the alien group is empty, complete the round
+        if not (self.alien_group):
+            self.score += 10000*self.round
+            self.round += 1
+            self.start_new_round()
 
     def check_game_status(self, main_text, sub_text):
         """Check to see the status of the game and how the player died"""
@@ -165,7 +178,20 @@ class Game():
 
     def reset_game(self):
         """Reset the game"""
-        pass
+        self.pause_game("Final Score: " + str(self.score), "Press 'Enter' to play again")
+
+        #Reset game values
+        self.score = 0
+        self.round = 1
+        self.player.lives = 5
+
+        #Empty Groups
+        self.alien_group.empty()
+        self.alien_laser_group.empty()
+        self.player_laser_group.empty()
+
+        #Start a new game
+        self.start_new_round()
 
 class Player(pygame.sprite.Sprite):
     """A class to model a spaceship the user can control"""
