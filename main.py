@@ -10,6 +10,12 @@ WINDOW_HEIGHT = 700
 display_surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Space Invaders")
 
+#Load background images
+bg_1_image = pygame.image.load("backgrounds/Space_BG_01/Space_BG_01.png")
+bg_1_image = pygame.transform.rotate(bg_1_image, 90)
+bg_1_rect = bg_1_image.get_rect()
+bg_1_rect.topleft = (0,0)
+
 #Set FPS and clock
 FPS = 60
 clock = pygame.time.Clock()
@@ -30,10 +36,14 @@ class Game():
         self.alien_laser_group = alien_laser_group
 
         #Set sounds and music
-        self.new_round_sound = pygame.mixer.Sound("new_round.wav")
+        self.new_round_sound = pygame.mixer.Sound("new_level.wav")
+        self.new_round_sound.set_volume(.5)
         self.breach_sound = pygame.mixer.Sound("breach.wav")
+        self.breach_sound.set_volume(.5)
         self.alien_hit_sound = pygame.mixer.Sound("alien_hit.wav")
+        self.alien_hit_sound.set_volume(.5)
         self.player_hit_sound = pygame.mixer.Sound("player_hit.wav")
+        self.player_hit_sound.set_volume(.5)
 
         #Set font
         self.font = pygame.font.Font("Facon.ttf", 32)
@@ -144,6 +154,8 @@ class Game():
     def pause_game(self, main_text, sub_text):
         """Pause the game"""
         global running
+        pygame.mixer.music.stop()
+
         #Set colors
         WHITE=(255,255,255)
         BLACK=(0,0,0)
@@ -174,6 +186,9 @@ class Game():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         is_paused = False
+                        pygame.mixer.music.load("fight.wav")
+                        pygame.mixer.music.play(-1,0,0)
+
 
 
     def reset_game(self):
@@ -209,6 +224,7 @@ class Player(pygame.sprite.Sprite):
         self.laser_group = laser_group
 
         self.shoot_sound = pygame.mixer.Sound("player_fire.wav")
+        self.shoot_sound.set_volume(.5)
 
     def update(self):
         """Update the player"""
@@ -249,6 +265,7 @@ class Alien(pygame.sprite.Sprite):
         self.laser_group = laser_group
 
         self.shoot_sound = pygame.mixer.Sound("alien_fire.wav")
+        self.shoot_sound.set_volume(.5)
 
     def update(self):
         """Update the alien"""
@@ -328,6 +345,8 @@ game.start_new_round()
 
 
 #The main game loop
+pygame.mixer.music.load("fight.wav")
+pygame.mixer.music.play(-1,0,0)
 running = True
 while running:
     #Check to see if the user wants to quit
@@ -339,8 +358,8 @@ while running:
             if event.key == pygame.K_SPACE:
                 player.fire()
 
-    #Fill the display
-    display_surface.fill((0,0,0))
+    #Blit the Background
+    display_surface.blit(bg_1_image, bg_1_rect)
 
     #Update and display all sprite groups
     player_group.update()
